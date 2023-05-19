@@ -1,10 +1,7 @@
-// ignore_for_file: avoid_web_libraries_in_flutter
-
 import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-
 import 'package:serial/serial.dart';
 
 void main() {
@@ -22,7 +19,6 @@ class _MyAppState extends State<MyApp> {
   final _inputController = TextEditingController();
   SerialPort? _port;
   final _received = <String>[];
-  //final _inputController = TextEditingController();
 
   Future<void> _openPort() async {
     final port = await window.navigator.serial.requestPort();
@@ -56,9 +52,9 @@ class _MyAppState extends State<MyApp> {
       final result = await reader.read();
       final text = String.fromCharCodes(result.value);
 
-      _received.add(text);
-
-      setState(() {});
+      setState(() {
+        _received.add(text);
+      });
     }
   }
 
@@ -69,48 +65,58 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Flutter Serial'),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ListView(
-                //上下左右各添加8像素补白
-                padding: const EdgeInsets.all(8),
-                children: _received.map((e) => Text(e)).toList(),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Card(
+                  elevation: 4,
+                  child: ListView.builder(
+                    itemCount: _received.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(
+                          _received[index],
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-            ElevatedButton(
-              child: const Text('Open Port'),
-              onPressed: () {
-                _openPort();
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _inputController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: "请输入要传递的信息",
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _openPort,
+                child: const Text('Open Port'),
               ),
-            ),
-
-
-            OutlinedButton(
-              child: const Text('Send'),
-              onPressed: () {
-                final inputText = _inputController.text;
-                _writeToPort(inputText);
-              },
-              style: ElevatedButton.styleFrom(),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              child: const Text('Receive'),
-              onPressed: () {
-                _readFromPort();
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: _inputController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: '请输入要传递的信息',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  final inputText = _inputController.text;
+                  _writeToPort(inputText);
+                },
+                child: const Text('Send'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _readFromPort,
+                child: const Text('Receive'),
+              ),
+            ],
+          ),
         ),
       ),
     );
